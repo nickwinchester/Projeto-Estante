@@ -60,8 +60,8 @@ if ($action !== 'login') {
     responderAuth(400, ['error' => 'Ação de autenticação inválida.']);
 }
 
-$adminEmail = strtolower(trim((string) (getenv('ESTANTE_ADMIN_EMAIL') ?: 'sara.pessopani@gmail.com')));
-$adminPassword = (string) (getenv('ESTANTE_ADMIN_PASSWORD') ?: '');
+$adminEmail = strtolower(trim((string) (getenv('ESTANTE_ADMIN_EMAIL') ?: 'example@admin.com')));
+$adminPassword = (string) (getenv('ESTANTE_ADMIN_PASSWORD') ?: 'admin');
 if ($adminEmail === '' || $adminPassword === '') {
     responderAuth(503, ['error' => 'O acesso administrativo ainda não foi configurado no servidor.']);
 }

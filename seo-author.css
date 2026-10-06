@@ -1,0 +1,18 @@
+.seo-author-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 32px auto 0;
+  padding: 20px 16px;
+  border-top: 1px solid var(--border, #d5d9d7);
+  color: var(--muted, #66716d);
+  font-size: 0.9rem;
+}
+
+.seo-author-footer a {
+  color: var(--primary, #73465b);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}

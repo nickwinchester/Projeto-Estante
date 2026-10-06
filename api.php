@@ -92,7 +92,13 @@ try {
         if (!is_array($perfilRecebido)) {
             responder(400, ['error' => 'Os dados do perfil são inválidos.']);
         }
+        $perfilPath = $diretorio . '/perfil.json';
+        $perfilAtual = is_file($perfilPath) ? json_decode((string) file_get_contents($perfilPath), true) : [];
+        if (!is_array($perfilAtual)) {
+            $perfilAtual = [];
+        }
         $foto = $perfilRecebido['photo'] ?? '';
+        $iconeSuperior = $perfilRecebido['siteIcon'] ?? ($perfilAtual['siteIcon'] ?? '');
         $favicon = $perfilRecebido['favicon'] ?? '';
         $fundo = $perfilRecebido['background'] ?? '';
         $fundoInicial = $perfilRecebido['homeBackground'] ?? '';
@@ -113,6 +119,7 @@ try {
         $secoesExtras = $perfilRecebido['customSections'] ?? [];
         $instagram = $perfilRecebido['instagram'] ?? '';
         $tiktok = $perfilRecebido['tiktok'] ?? '';
+        $estilosTextoInicial = $perfilRecebido['homeTextStyles'] ?? ($perfilAtual['homeTextStyles'] ?? []);
         foreach ([
             'foto' => $foto,
             'fundo' => $fundo,
@@ -125,6 +132,24 @@ try {
         }
         if (!is_string($favicon) || strlen($favicon) > 2500000 || ($favicon !== '' && !preg_match('#^data:image/png;base64,[A-Za-z0-9+/]+={0,2}$#', $favicon))) {
             responder(400, ['error' => 'O favicon é inválido ou muito grande.']);
+        }
+        if (!is_string($iconeSuperior) || strlen($iconeSuperior) > 2500000 || ($iconeSuperior !== '' && !preg_match('#^data:image/(?:jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$#', $iconeSuperior))) {
+            responder(400, ['error' => 'O ícone superior é inválido ou muito grande.']);
+        }
+        $camposTextoInicial = ['siteName', 'homeLabel', 'homeTitle', 'introMessage', 'homeSignoff'];
+        $fontesTextoPermitidas = ['default', 'Cinzel Decorative', 'Berkshire Swash', 'Cormorant Garamond', 'UnifrakturCook', 'Playfair Display', 'DM Serif Display', 'Bodoni Moda'];
+        if (!is_array($estilosTextoInicial)) {
+            responder(400, ['error' => 'As configurações de fonte e cor são inválidas.']);
+        }
+        $estilosTextoValidados = [];
+        foreach ($camposTextoInicial as $campoTexto) {
+            $estilo = $estilosTextoInicial[$campoTexto] ?? [];
+            $fonte = is_array($estilo) ? ($estilo['font'] ?? 'default') : null;
+            $cor = is_array($estilo) ? ($estilo['color'] ?? '') : null;
+            if (!is_string($fonte) || !in_array($fonte, $fontesTextoPermitidas, true) || !is_string($cor) || ($cor !== '' && !preg_match('/^#[0-9a-fA-F]{6}$/', $cor))) {
+                responder(400, ['error' => 'Uma fonte ou cor de texto da página inicial é inválida.']);
+            }
+            $estilosTextoValidados[$campoTexto] = ['font' => $fonte, 'color' => strtolower($cor)];
         }
         $temasPermitidos = ['vitoriano', 'gold', 'gotico', 'sombrio', 'rock', 'jardim-secreto', 'oceano', 'personalizado'];
         $camposPaleta = ['primary', 'secondary', 'background', 'surface', 'text', 'muted', 'border', 'highlight', 'subtle', 'buttonText', 'danger', 'success'];
@@ -206,6 +231,7 @@ try {
         }
         $perfil = [
             'photo' => $foto,
+            'siteIcon' => $iconeSuperior,
             'favicon' => $favicon,
             'background' => $fundo,
             'backgroundShared' => $fundosCompartilhados,
@@ -216,6 +242,7 @@ try {
             'homeTextBackground' => strtolower($fundoTextoInicial),
             'homeTextBackgroundOpacity' => (int) $opacidadeTextoInicial,
             'siteName' => trim($nomeSite),
+            'homeTextStyles' => $estilosTextoValidados,
             'homeLabel' => trim($rotuloInicial),
             'homeTitle' => trim($tituloInicial),
             'homeSignoff' => trim($assinaturaInicial),
